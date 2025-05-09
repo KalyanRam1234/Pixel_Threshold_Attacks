@@ -87,8 +87,91 @@ datasets
 
 The results of our experiments, which involve the affects of the attack and the model weights can be found in this link: [Results and Weights](https://drive.google.com/drive/folders/1Ctlv4lhhjTADT0bnHnX4iv7jNUeyqkx7?usp=sharing)
 
-## Work Done
+# Work Summary
 
-We first started off by setting up the old code of dual quality assessmenet and understanding the working of the code.
+## Initial Setup
 
-It required setting up the required tensorflow data
+We began by setting up the existing codebase for dual quality assessment and familiarizing ourselves with its functionality. This involved:
+
+- Installing the required TensorFlow version.
+- Downloading and preparing the Xview dataset.
+- Running the `run_unit_tests.sh` script, which executes pixel and threshold attacks on LeNet and MLP model architectures.
+
+## Motivation for Extension
+
+Our objective was to adapt and run these attacks on the **Xview** dataset, as it is more relevant for testing the robustness of models on aerial imagery. However, during our experiments, we observed two key limitations:
+
+1. **Attack Objective**: The existing attack code is designed to induce **misclassification**, not **misplacement or removal** of bounding boxes.
+2. **Data Loading Inefficiency**: Data loaders for other datasets load the entire data into NumPy arrays, which is inefficient for large-scale datasets like Xview.
+
+## Improvements Made
+
+### 1. TensorFlow Dataset Integration
+
+To address the inefficiencies and enable on-the-fly data processing, we integrated **TensorFlow Datasets** (TFDS) and **Keras** preprocessing. This allowed image loading and preprocessing to happen during runtime, significantly improving efficiency.
+
+- Updated the data loader to crop each bounding box and assign the appropriate class label.
+- This was necessary since the system supports **single-object classification**, while Xview contains **multiple bounding boxes per image**.
+- The code in `oldmodel.py` can still be used for legacy NumPy-based data loading.
+
+### 2. Model Code Updates
+
+The `code/networks/model.py` file had several functions that assumed NumPy-based inputs. These were refactored to support TensorFlow Datasets, ensuring compatibility with the new data pipeline.
+
+### 3. Network Architecture
+
+Although the attack method is **black-box**, the model architecture needs to be defined in TensorFlow to allow forward propagation with and without noise.
+
+We focused on the **YOLOv3** model architecture due to its relevance in aerial object detection tasks, especially since it is being tested in the ADA Lab.
+
+- We implemented YOLOv3 by adapting from a TensorFlow-based YOLOv3 implementation.
+- The original object detection head (bounding box regressor) was removed.
+- It was replaced with a simple **classifier ANN** using the YOLOv3 backbone as a feature extractor.
+
+### 4. Running the Attack
+
+With the model and dataloader configured, we were able to prepare the system to run attacks on the Xview dataset using the YOLOv3-based classifier.
+
+- New configurations were added to `code/attacks/base_attack.py`.
+- Existing scripts were modified to support and execute attacks using the updated setup.
+
+
+## General Steps to Run Code on Other Datasets
+
+First create a new folder inside the code folder with the name of the dataset.
+
+Then create the ``__init__.py`` file which has the imports for all the files that will be defined in this module
+
+Then the dataloader file needs to be defined, which will inherit the ``Model`` class from the model.py file and implement the necessary functions
+
+Finally the network file needs to be created which inherits the dataloader file created earlier and specifies the network and usage code.
+
+## Some results of the Attacks
+
+### Pixel Attack Results:
+
+**MNIST Dataset**
+
+![Misclassification on Pixel Attack](images/images/Pixel_DE/Mnist/MLP-without_augmentation/test.png)
+
+![Correct Classification on Threshold Attack](images/images/Threshold_CMAES/Mnist/MLP-without_augmentation/test.png)
+
+**Cifar Dataset**
+
+![Misclassification on Pixel Attack](images/images/Pixel_DE/Cifar10/YoloV3-without_augmentation/test.png)
+
+
+**Xview Dataset and Yolo Model**
+
+![Correct classification on Pixel Attack](images/images/Pixel_DE/xView/YoloV3_Xview-without_augmentation/test.png)
+
+![Misclassification on Pixel Attack](images/images/Pixel_DE/xView/YoloV3_Xview-without_augmentation/test1.png)
+
+![Misclassification of Aircraft](images/images/Pixel_CMAES/xView/YoloV3_Xview-without_augmentation/test.png)
+
+![Correct Classification on Threshold Attack](images/images/Threshold_CMAES/xView/YoloV3_Xview-without_augmentation/test.png)
+
+## Future Work
+
+This work shows the power of the black box attacks on the object classification task, which is more or less model architecture agnostic. Future work can focus on utilizing these attacks for modifying bounding box results since exisitng methods like patch attack is still white box where the patch generation is dependent on the training of the model to generate an effective patch.
+
