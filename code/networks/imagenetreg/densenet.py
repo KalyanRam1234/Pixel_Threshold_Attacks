@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-from networks.cifar.cifar_model import CifarModel
+from networks.imagenetreg.imagenetreg_model import ImagenetModelreg
 
-
-class DenseNet(CifarModel):
+class DenseNet(ImagenetModelreg):
     """
     TODO: Write Comment
     """
@@ -13,9 +12,9 @@ class DenseNet(CifarModel):
         TODO: Write Comment
         """
 
-        self.name         = 'DenseNet'
+        self.name = 'DenseNet'
 
-        CifarModel.__init__(self, args)
+        ImagenetModelreg.__init__(self, args)
     
     def network(self, img_input):
         """

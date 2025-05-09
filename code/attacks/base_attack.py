@@ -64,8 +64,14 @@ class Attack():
             elif self.NUM_MODEL == 7: model = cifar.vgg.VGG16(self.args)
             elif self.NUM_MODEL == 8: model = cifar.capsnet.CapsNet(self.args)
             elif self.NUM_MODEL == 9: model = cifar.vgg.VGG19(self.args)
+            elif self.NUM_MODEL == 10: model = cifar.yolo_v3.YoloV3(self.args)
             
+        elif self.FAMILY_DATASET == 3:
+            from networks import imagenetreg
 
+            if self.NUM_MODEL == 1 : model = imagenetreg.densenet.DenseNet(self.args)
+            elif self.NUM_MODEL == 2: model = imagenetreg.YoloV3.YoloV3(self.args)
+            
         elif self.FAMILY_DATASET == 2:
 
             from networks import imagenet
@@ -89,6 +95,12 @@ class Attack():
             elif self.NUM_MODEL == 16: model = imagenet.keras_applications.VGG16(self.args)
             elif self.NUM_MODEL == 17: model = imagenet.keras_applications.VGG19(self.args)
 
+        elif self.FAMILY_DATASET == 4 :
+            from networks import Xview
+
+            if self.NUM_MODEL == 0: model = Xview.YoloV3.YoloV3(self.args)
+            elif self.NUM_MODEL == 1: model = Xview.YoloV3Large.YoloV3Large(self.args) 
+            
         model.load()
 
         return model
@@ -148,7 +160,8 @@ class Attack():
 
                 if (self.TARGETED) and (target == self.y): continue
                 target_class = target if self.TARGETED else self.y
-                    
+                
+                print(f"This is the target class: {target_class}")
                 image_results += self.attack_image(target_class)
 
                 with open(f"./logs/results/{self.dir_path}/results.pkl", 'wb') as file: pickle.dump(image_results, file)

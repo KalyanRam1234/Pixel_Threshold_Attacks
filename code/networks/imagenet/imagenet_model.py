@@ -2,6 +2,7 @@
 
 from networks.model import Model
 
+import json
 class ImagenetModel(Model):
 
     def __init__(self, args):
@@ -131,7 +132,7 @@ class ImagenetModel(Model):
             return raw_dataset, processed_dataset
             
         self.img_rows, self.img_cols, self.img_channels = self.size, self.size, 3
-        self.data_dir = '/home/danilo/imagenet_files'
+        self.data_dir = '/home/kalyan/Xview/DualQualityAssessment/imagenet'
 
         self.mean = [123.68, 116.78, 103.94]
         self.std  = [1., 1., 1.]
@@ -149,6 +150,16 @@ class ImagenetModel(Model):
             self.num_images   = {'train': 129359, 'test': 5000}
             self.num_classes  = 10
             self.class_names  = ['Automobile', 'Ball', 'Bird', 'Dog', 'Feline', 'Fruit', 'Insect', 'Snake', 'Primate', 'Vegetable']
+
+        elif self.USE_DATASET == 2:
+            json_path = os.path.join(self.data_dir, "Labels.json")
+            with open(json_path) as f:
+                data = json.load(f)
+            self.dataset_name = 'SemiImagenet'
+            self.num_images = {'train': 130000, 'test': 5000}
+            self.num_classes = 100
+            self.class_names = [values for (key,values) in data.items()]
+
         
         self.raw_train_dataset, self.processed_train_dataset, = create_dataset(True)
         self.raw_test_dataset,  self.processed_test_dataset , = create_dataset(False)

@@ -69,3 +69,5 @@ class CifarModel(Model):
 
         self.iterations_train = (self.num_images['train'] // self.batch_size) + 1   
         self.iterations_test  = (self.num_images['test']  // self.batch_size) + 1  
+
+        print("Done with dataset creation")

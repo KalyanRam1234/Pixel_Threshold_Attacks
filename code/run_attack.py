@@ -11,6 +11,7 @@ def set_tensorflow_config(g_index=0):
     tf.get_logger().setLevel("ERROR")
 
     gpus = tf.config.experimental.list_physical_devices('GPU')
+    print(gpus)
 
     if gpus:
 
@@ -19,11 +20,14 @@ def set_tensorflow_config(g_index=0):
                 gpu_index = 0
             else:
                 gpu_index = g_index
+                
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
 
             tf.config.experimental.set_visible_devices(gpus[gpu_index], 'GPU')
             tf.config.experimental.set_memory_growth(gpus[gpu_index], True)
             logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-
+            print(logical_gpus)
         except RuntimeError as e: print(e)
 
 if __name__ == "__main__":
@@ -45,8 +49,8 @@ if __name__ == "__main__":
     
     parser.add_argument('--plot_image',                 action='store_true',                                     help='Plot Adversarial Image (Optional)')
 
-    parser.add_argument('-f','--family_dataset',        type=int, default=1, choices=[0,1,2],                    help='Family of the Dataset to be used')
-    parser.add_argument('-d','--use_dataset',           type=int, default=0, choices=[0,1],                      help='Dataset to be used')
+    parser.add_argument('-f','--family_dataset',        type=int, default=1, choices=[0,1,2,3,4],                    help='Family of the Dataset to be used')
+    parser.add_argument('-d','--use_dataset',           type=int, default=0, choices=[0,1,2],                      help='Dataset to be used')
     
     parser.add_argument('-m','--model',                 type=int, default=3,                                     help='Model to be used')    
     parser.add_argument('--epochs',                     type=int, default=200,                                   help='Number of epochs Model Needs To be trained, if weight doesnt exist')

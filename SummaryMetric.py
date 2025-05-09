@@ -146,6 +146,7 @@ columns = ['attack', 'model', 'threshold', 'image', 'true', 'predicted', 'succes
              'prior_probs', 'predicted_probs', 'perturbation', 'attacked_image', 'l2_distance']
 
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser(description=('Summary of Stats'))
     parser.add_argument('-n','--network', action='store_true', help='if print network stats')
     parser.add_argument('-a','--attack', action='store_true', help='if print attack stats')
@@ -204,7 +205,7 @@ if __name__ == "__main__":
             v = attack_stats(results)
             print(len(v), results['image'].max(), v['l2_distance'].mean(), v['threshold'].mean())
             
-        '''        
+              
         uniques = []
         counts = []
         ccounts = []
@@ -257,7 +258,7 @@ if __name__ == "__main__":
                     ax.grid()
                     ax.set_xlabel('Percentage of Images Successfully Attacked')
                     ax.set_ylabel('th')
-                    ax.set_yscale('probability', points = np.array([1,3,5,10,20,40,80,120,127]), vmin = 0.01)
+                    ax.set_yscale('linear', points = np.array([1,3,5,10,20,40,80,120,127]), vmin = 0.01)
 
         min_th = 1
 
@@ -265,7 +266,8 @@ if __name__ == "__main__":
             if 'Cifar' in file:
                 with open(file, 'rb') as _file: results = pickle.load(_file)
                 print('Results for : ',file)
-                v = attack_stats(pd.DataFrame(results, columns=['attack', 'model', 'threshold', 'image', 'true', 'predicted', 'success', 'cdiff', 'prior_probs', 'predicted_probs', 'perturbation', 'attacked_image']))
+                v = attack_stats(pd.DataFrame(results, columns=['attack', 'model', 'threshold', 'image', 'true', 'predicted', 'success', 'cdiff',
+             'prior_probs', 'predicted_probs', 'perturbation', 'attacked_image', 'l2_distance']))
         
                 if len(v) > 0:
 
@@ -327,4 +329,4 @@ if __name__ == "__main__":
 
             fig.savefig("./plots/" + pre + l, bbox_inches="tight", dpi=300)
 
-        '''
+        

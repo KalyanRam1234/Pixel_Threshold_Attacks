@@ -21,6 +21,7 @@ class OurAttack(Attack):
         
         Attack.__init__(self, args)
         
+        print("Attack Setup done")
         self.set_ES(args.evolutionary_strategy)
         
         self.POPSIZE   = self.args.pop_size 
@@ -100,6 +101,7 @@ class OurAttack(Attack):
                 std = 63
             elif "Threshold" in self.attack_name: 
                 std = th
+                
                                 
             es = cma.CMAEvolutionStrategy(initial, std/4, opts)
             
@@ -154,6 +156,7 @@ class OurAttack(Attack):
             if self.VERBOSE: print(f"[#][.]Attacking {self.model.name} with {self.attack_name} threshold {self.THRESHOLD} -- image {self.img}")
                 
             image_result, success = self.start_attack(target_class, self.THRESHOLD)
+
                 
             image_results += image_result
                     

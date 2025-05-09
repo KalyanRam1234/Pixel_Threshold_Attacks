@@ -1,4 +1,4 @@
-# Dual Quality Assessment
+# Pixel and Threshold Attack on Xview Dataset
 
 This GitHub repository contains the official code for the papers,
 
@@ -38,102 +38,57 @@ If this work helps your research and/or project in anyway, please cite:
 }
 ```
 
-## Testing Environment
+Additionally it contains the work on the Xview dataset and YoloV3 network as well.
 
-The code is tested on Ubuntu 18.04.3 with Python 3.7.4.
+## Environment Setup
 
-## Getting Started
+Ensure that you have a system with a GPU to do the training, if you already have the model weights, then its not needed.
 
-### Requirements
-
-To run the code in the tutorial locally, it is recommended, 
-- a dedicated GPU suitable for running, and
-- install Anaconda. 
-
-The following python packages are required to run the code. 
-- `cma==2.7.0`
-- `matplotlib==3.1.1`
-- `numpy==1.17.2`
-- `pandas==0.25.1`
-- `scipy==1.4.1`
-- `seaborn==0.9.0`
-- `tensorflow==2.1.0`
-
----
-
-### Steps
-
-1. Clone the repository.
-
+First clone this repository in your local system.
 ```bash
-git clone https://github.com/shashankkotyan/DualQualityAssessment.git
-cd ./DualQualityAssessment
+git clone <This repo link>
 ```
 
-2. Create a virtual environment 
-
+To install the required packages, use the XviewAttackenv.yml file
 ```bash
-conda create --name dqa python=3.7.4
+conda create -f XviewAttackenv.yml
 conda activate dqa
 ```
 
-3. Install the python packages in `requirements.txt` if you don't have them already.
+Link of YoloV3 tensorflow model repo used: [YoloV3 Architecture](https://github.com/zzh8829/yolov3-tf2/blob/master/train.py)
+
+## Dataset Installation
+
+We ran the attacks on the Xview dataset, it can be installed from the Xview dataset challenge page : [Xview Dataset](http://xviewdataset.org/#dataset)
+
+Or it can download the formatted dataset we have used from this link: [Xview Formatted Dataset](https://drive.google.com/drive/folders/1P0fL3wWNJkjwfq5NBYRjw-KzPx4FYEBl?usp=sharing)
+
+### File Structure
+
+The folders are expected to look like: 
 
 ```bash
-pip install -r ./requirements.txt
+datasets
+|__images
+    |__train
+        |__1.tiff
+        |__2.tiff
+    |__val
+        |__1.tiff
+        |__2.tiff
+    |__autosplit_train.txt
+    |__autosplit_val.txt
+|__labels
+    |__train
+        |__1.txt
 ```
 
-4. Run an adversarial attack with the following command.
+## Downloading Weights and Results
 
-    a) Run the Pixel Attack with the following command
+The results of our experiments, which involve the affects of the attack and the model weights can be found in this link: [Results and Weights](https://drive.google.com/drive/folders/1Ctlv4lhhjTADT0bnHnX4iv7jNUeyqkx7?usp=sharing)
 
-    ```bash
-    python -u code/run_attack.py pixel [ARGS] > run.txt
-    ```
+## Work Done
 
-    b) Run the Threshold Attack with the following command
+We first started off by setting up the old code of dual quality assessmenet and understanding the working of the code.
 
-    ```bash
-    python -u code/run_attack.py threshold [ARGS] > run.txt
-    ```
-
-<!--
-To be Included
-
-5. Calculate the statstics for the attacks.
-
-
-# ```bash
-# python -u code/run_stats.py > run_stats.txt     
-# ```
--->
-
-## Arguments for run_attack.py
-
-TBD
-
-## Notes
-
-TBD
-
-## Milestones
-
-- [ ] Tutorials
-- [ ] Addition of Comments in the Code
-- [ ] Cross Platform Compatibility
-- [ ] Description of Method in Readme File
-
-## License
-
-Dual Quality Assessment is licensed under the MIT license. 
-Contributors agree to license their contributions under the MIT license.
-
-## Contributors and Acknowledgements
-
-TBD
-
-## Reaching out
-
-You can reach me at shashankkotyan@gmail.com or [\@shashankkotyan](https://twitter.com/shashankkotyan).
-If you tweet about Dual Quality Assessment, please use one of the following tags `#pixel_attack`, `#threshold_attack`, `#dual_quality_assessment`,  and/or mention me ([\@shashankkotyan](https://twitter.com/shashankkotyan)) in the tweet.
-For bug reports, questions, and suggestions, use [Github issues](https://github.com/shashankkotyan/DualQualityAssessment/issues).
+It required setting up the required tensorflow data

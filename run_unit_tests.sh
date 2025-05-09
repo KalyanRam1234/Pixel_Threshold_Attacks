@@ -37,7 +37,7 @@ do
             do
                 for model in 0
                 do
-                    python -u code/run_attack.py $attack -e $es -f $family -d $dataset -m $model --samples 1 --epochs 1 -th 64 -v 
+                    python -u code/run_attack.py $attack -e $es -f $family -d $dataset -m $model --samples 1 --epochs 10 -th 16 -v --plot_image
                 done
             done
         done
@@ -48,12 +48,29 @@ do
             do
                 for model in 1
                 do
-                    python -u code/run_attack.py $attack -e $es -f $family -d $dataset -m $model --samples 1 --epochs 1 -th 64 -v
+                    python -u code/run_attack.py $attack -e $es -f $family -d $dataset -m $model --samples 1 --epochs 10 -th 16 -v --plot_image
                 done
             done
         done
     done
 done
+
+# for attack in pixel threshold 
+# do
+#     for es in 1 0
+#     do
+#         for family in 1 0
+#         do
+#             for dataset in 0
+#             do
+#                 for model in 0 1
+#                 do
+#                     python -u code/run_attack.py $attack -e $es -f $family -d $dataset -m $model --samples 1 --epochs 10 -th 16 --verbose --plot_image --batch_size 16
+#                 done
+#             done
+#         done
+#     done
+# done
 
 # #Check Other Attacks
 # for attack in bilinf pgdlinf deep newton

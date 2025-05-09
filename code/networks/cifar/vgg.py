@@ -91,7 +91,8 @@ class VGG16(VGG):
         self.vgg_type = 16
 
         VGG.__init__(self, args)
-
+        print("VGG setup done")
+        
 class VGG19(VGG):
     """
     TODO: Write Comment

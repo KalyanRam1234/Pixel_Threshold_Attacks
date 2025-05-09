@@ -61,6 +61,7 @@ class ResNet(CifarModel):
 
         for _ in range(stack_n):    
         	x = residual_block(x, 16, False)
+             
         x = residual_block(x, 32, True)
         
         for _ in range(1, stack_n): 
@@ -69,7 +70,7 @@ class ResNet(CifarModel):
         
         for _ in range(1, stack_n): 
         	x = residual_block(x, 64, False)
-
+            
         x = layers.BatchNormalization()(x)
         x = layers.Activation('relu', name='Penultimate')(x)
 

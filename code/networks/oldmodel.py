@@ -197,284 +197,137 @@ class Model:
     
     ## OLD CODE
     # getting stuck here
-    # def fit_model(self, x_train, y_train, x_test, y_test, batch_size, epochs, iterations, cbks, verbose):
-    #     """
-    #     TODO: Write Comment
-    #     """
-    #     from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
-    #     datagen = ImageDataGenerator(horizontal_flip=True, width_shift_range=0.125, height_shift_range=0.125, fill_mode='constant',cval=0.)
-        
-    #     datagen.fit(x_train)
-
-    #     if self.NUM_DEFENCE != 1:
-    #         if self.AUGMENTATION:
-    #             history = self._model.fit_generator(
-    #                 datagen.flow(x_train, y_train, batch_size=batch_size),
-    #                 steps_per_epoch=iterations, epochs=epochs, callbacks=cbks, verbose=verbose,
-    #                 # workers=12, use_multiprocessing=True,
-    #                 validation_data=(x_test, y_test)
-    #             )
-    #         else:
-    #             history = self._model.fit(
-    #                 x_train, y_train, batch_size=batch_size, 
-    #                 epochs=epochs, callbacks=cbks, verbose=1,
-    #                 workers=4, use_multiprocessing=True,
-    #                 validation_data=(x_test, y_test)
-    #             )
-
-    #         return history.history
-
-    #     else:
-
-    #         return self.fit_adversarial_traning(datagen.flow(x_train, y_train, batch_size=batch_size), x_train, y_train, x_test, y_test, batch_size, epochs, iterations, cbks, verbose)
-
-    def fit_model(self, train_dataset, test_dataset, batch_size, epochs, iterations, cbks, verbose):
+    def fit_model(self, x_train, y_train, x_test, y_test, batch_size, epochs, iterations, cbks, verbose):
         """
-        Fits the model using normal training or adversarial training, with optional data augmentation.
+        TODO: Write Comment
         """
+        from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-        def augment(image, label):
-            # Apply basic augmentations: horizontal flip and small shifts
-            image = tf.image.random_flip_left_right(image)
-            image = tf.image.random_translation(image, translations=[0.125, 0.125], fill_mode='constant')
-            return image, label
+        datagen = ImageDataGenerator(horizontal_flip=True, width_shift_range=0.125, height_shift_range=0.125, fill_mode='constant',cval=0.)
         
-        # Prepare tf.data datasets
-        train_ds = train_dataset
-        val_ds = test_dataset
+        datagen.fit(x_train)
 
         if self.NUM_DEFENCE != 1:
             if self.AUGMENTATION:
-                train_ds = train_ds.map(augment, num_parallel_calls=tf.data.AUTOTUNE)
-            
-            train_ds = train_ds.shuffle(1000).prefetch(tf.data.AUTOTUNE)
-            val_ds = val_ds.prefetch(tf.data.AUTOTUNE)
-            val_ds_length = sum(1 for _ in val_ds)
-            print(f"Validation dataset: {val_ds_length }")
-            
-            
-            history = self._model.fit(
-                train_ds,
-                steps_per_epoch=iterations,
-                epochs=epochs,
-                callbacks=cbks,
-                verbose=verbose,
-                validation_data=val_ds,
-                validation_steps=self.iterations_test
-            )
-
-            print(f"History keys: {history.history.keys()}")
+                history = self._model.fit_generator(
+                    datagen.flow(x_train, y_train, batch_size=batch_size),
+                    steps_per_epoch=iterations, epochs=epochs, callbacks=cbks, verbose=verbose,
+                    # workers=12, use_multiprocessing=True,
+                    validation_data=(x_test, y_test)
+                )
+            else:
+                history = self._model.fit(
+                    x_train, y_train, batch_size=batch_size, 
+                    epochs=epochs, callbacks=cbks, verbose=1,
+                    workers=4, use_multiprocessing=True,
+                    validation_data=(x_test, y_test)
+                )
 
             return history.history
 
         else:
-            # Defence mode
-            train_ds = train_ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
-            val_ds = val_ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
-            return self.fit_adversarial_training(train_ds, val_ds, batch_size, epochs, iterations, cbks, verbose)
+
+            return self.fit_adversarial_traning(datagen.flow(x_train, y_train, batch_size=batch_size), x_train, y_train, x_test, y_test, batch_size, epochs, iterations, cbks, verbose)
 
     ## OLD Code
 
-    # def fit_adversarial_traning(self, generator, x_train, y_train, x_test, y_test, batch_size, epochs, iterations, cbks, verbose):
+    def fit_adversarial_traning(self, generator, x_train, y_train, x_test, y_test, batch_size, epochs, iterations, cbks, verbose):
         
-    #     import tensorflow as tf
-    #     from art import attacks, classifiers
-    #     from tensorflow.keras import losses
-    #     from time import time
-
-    #     loss_object = losses.CategoricalCrossentropy()
-        
-    #     attack = attacks.evasion.ProjectedGradientDescent(
-    #                         classifiers.TensorFlowV2Classifier(
-    #                             self._model, self.num_classes, self.input_shape, 
-    #                             loss_object=loss_object, channel_index=3, 
-    #                             clip_values=(0,255), preprocessing=(self.mean, self.std)
-    #                         ), 
-    #                         eps=8, eps_step=2, max_iter=10, num_random_init=True)
-        
-    #     optimizer = self.optimizer
-
-    #     template = 'Epoch {}, Batch {}, Epoch Time: {:2f} Loss: {:4.2f}, Accuracy: {:4.2f}, Test Loss: {:4.2f}, Test Accuracy: {:4.2f}'
-        
-    #     history = {'accuracy': [], 'val_accuracy': [], 'loss': [], 'val_loss': [], 'epoch_time': []}
-
-    #     for i in range(epochs):
-
-    #         x, y = [], []
-
-    #         start = time()
-    #         train_loss     = []
-    #         train_accuracy = []
-
-    #         for batch_id in range(iterations):
-
-    #             print(template.format(i + 1,
-    #                               batch_id +1,
-    #                               (time()-start)/(i+1),
-    #                               np.mean(np.array(train_loss)),
-    #                               np.mean(np.array(train_accuracy)),
-    #                               0,
-    #                               0))
-
-    #             self.optimizer.learning_rate = self.scheduler(i)
-
-    #             if self.AUGMENTATION:
-    #                 x_batch, y_batch = next(generator)
-    #                 x_batch          = x_batch.copy()
-    #             else:
-
-    #                 x_batch = x_train[ batch_id * batch_size : min((batch_id + 1) * batch_size, self.num_images['train']) ].copy()
-    #                 y_batch = y_train[ batch_id * batch_size : min((batch_id + 1) * batch_size, self.num_images['train']) ]
-
-    #             fit_x = self._model.train_on_batch(self.color_preprocess(x_batch), y_batch)
-
-    #             x_batch_adv = x_batch.copy()
-    #             x_batch_adv = attack.generate(x_batch.astype(np.float32), y=y_batch)
-
-    #             fit_adv_x = self._model.train_on_batch(self.color_preprocess(x_batch_adv), y_batch)
-
-    #             train_loss     += [fit_x[0] + fit_adv_x[0]]
-    #             train_accuracy += [fit_x[1] + fit_adv_x[1]]
-                
-    #         test_scores = self._model.evaluate(x_test, y_test)
-
-    #         end = time()
-    #         epoch_time = end - start
-
-    #         history['epoch_time']   += [epoch_time]
-    #         history['loss']         += [np.mean(np.array(train_loss))]
-    #         history['accuracy']     += [np.mean(np.array(train_accuracy))]
-    #         history['val_loss']     += [test_scores[0]]
-    #         history['val_accuracy'] += [test_scores[1]]
-
-    #         print(template.format(i + 1,
-    #                               batch_id +1,
-    #                               epoch_time,
-    #                               np.mean(np.array(train_loss)),
-    #                               np.mean(np.array(train_accuracy)),
-    #                               test_scores[0],
-    #                               test_scores[1]))
-
-    #         self._model.save_weights(f"{self.log_filepath}model_weights-epoch{i+1}.h5")
-
-    #     return history
-
-    def fit_adversarial_training(self, train_ds, val_ds, batch_size, epochs, iterations, cbks, verbose):
-        """
-        Trains the model using adversarial training with PGD attack.
-        """
-
         import tensorflow as tf
         from art import attacks, classifiers
         from tensorflow.keras import losses
         from time import time
 
         loss_object = losses.CategoricalCrossentropy()
-
-        # ART classifier
-        classifier = classifiers.TensorFlowV2Classifier(
-            model=self._model,
-            nb_classes=self.num_classes,
-            input_shape=self.input_shape,
-            loss_object=loss_object,
-            channel_index=3,
-            clip_values=(0, 255),
-            preprocessing=(self.mean, self.std)
-        )
-
-        # PGD Attack
+        
         attack = attacks.evasion.ProjectedGradientDescent(
-            classifier,
-            eps=8,
-            eps_step=2,
-            max_iter=10,
-            num_random_init=True
-        )
+                            classifiers.TensorFlowV2Classifier(
+                                self._model, self.num_classes, self.input_shape, 
+                                loss_object=loss_object, channel_index=3, 
+                                clip_values=(0,255), preprocessing=(self.mean, self.std)
+                            ), 
+                            eps=8, eps_step=2, max_iter=10, num_random_init=True)
+        
+        optimizer = self.optimizer
 
+        template = 'Epoch {}, Batch {}, Epoch Time: {:2f} Loss: {:4.2f}, Accuracy: {:4.2f}, Test Loss: {:4.2f}, Test Accuracy: {:4.2f}'
+        
         history = {'accuracy': [], 'val_accuracy': [], 'loss': [], 'val_loss': [], 'epoch_time': []}
 
-        for epoch in range(epochs):
-            start = time()
+        for i in range(epochs):
 
-            train_loss = []
+            x, y = [], []
+
+            start = time()
+            train_loss     = []
             train_accuracy = []
 
-            for step, (x_batch, y_batch) in enumerate(train_ds):
+            for batch_id in range(iterations):
 
-                self.optimizer.learning_rate = self.scheduler(epoch)
+                print(template.format(i + 1,
+                                  batch_id +1,
+                                  (time()-start)/(i+1),
+                                  np.mean(np.array(train_loss)),
+                                  np.mean(np.array(train_accuracy)),
+                                  0,
+                                  0))
 
-                # Train on clean batch
+                self.optimizer.learning_rate = self.scheduler(i)
+
+                if self.AUGMENTATION:
+                    x_batch, y_batch = next(generator)
+                    x_batch          = x_batch.copy()
+                else:
+
+                    x_batch = x_train[ batch_id * batch_size : min((batch_id + 1) * batch_size, self.num_images['train']) ].copy()
+                    y_batch = y_train[ batch_id * batch_size : min((batch_id + 1) * batch_size, self.num_images['train']) ]
+
                 fit_x = self._model.train_on_batch(self.color_preprocess(x_batch), y_batch)
 
-                # Generate adversarial examples
-                x_batch_adv = attack.generate(x_batch.numpy(), y=y_batch.numpy())
-                x_batch_adv = tf.convert_to_tensor(x_batch_adv, dtype=tf.float32)
+                x_batch_adv = x_batch.copy()
+                x_batch_adv = attack.generate(x_batch.astype(np.float32), y=y_batch)
 
-                # Train on adversarial batch
                 fit_adv_x = self._model.train_on_batch(self.color_preprocess(x_batch_adv), y_batch)
 
-                train_loss.append(fit_x[0] + fit_adv_x[0])
-                train_accuracy.append(fit_x[1] + fit_adv_x[1])
-
-                if step % 10 == 0:
-                    print(f"Epoch {epoch+1}, Step {step}, Loss: {np.mean(train_loss):.4f}, Accuracy: {np.mean(train_accuracy):.4f}")
-
-            # Evaluate on clean validation set
-            val_scores = self._model.evaluate(val_ds, verbose=1)
+                train_loss     += [fit_x[0] + fit_adv_x[0]]
+                train_accuracy += [fit_x[1] + fit_adv_x[1]]
+                
+            test_scores = self._model.evaluate(x_test, y_test)
 
             end = time()
+            epoch_time = end - start
 
-            history['epoch_time'].append(end - start)
-            history['loss'].append(np.mean(train_loss))
-            history['accuracy'].append(np.mean(train_accuracy))
-            history['val_loss'].append(val_scores[0])
-            history['val_accuracy'].append(val_scores[1])
+            history['epoch_time']   += [epoch_time]
+            history['loss']         += [np.mean(np.array(train_loss))]
+            history['accuracy']     += [np.mean(np.array(train_accuracy))]
+            history['val_loss']     += [test_scores[0]]
+            history['val_accuracy'] += [test_scores[1]]
 
-            print(f"Epoch {epoch+1} completed in {end-start:.2f}s: Train Loss={np.mean(train_loss):.4f}, Val Loss={val_scores[0]:.4f}, Train Acc={np.mean(train_accuracy):.4f}, Val Acc={val_scores[1]:.4f}")
+            print(template.format(i + 1,
+                                  batch_id +1,
+                                  epoch_time,
+                                  np.mean(np.array(train_loss)),
+                                  np.mean(np.array(train_accuracy)),
+                                  test_scores[0],
+                                  test_scores[1]))
 
-            self._model.save_weights(f"{self.log_filepath}model_weights-epoch{epoch+1}.h5")
+            self._model.save_weights(f"{self.log_filepath}model_weights-epoch{i+1}.h5")
 
         return history
 
+
     ## OLD CODE
-    # def fit_normal(self):
-    #     """
-    #     TODO: Write Comment
-    #     """
-    #     x_train = self.processed_x_train if self.NUM_DEFENCE != 1 else self.raw_x_train
-            
-    #     history = self.fit_model(x_train, self.processed_y_train, self.processed_x_test, self.processed_y_test,  self.batch_size, self.epochs, self.iterations_train, self.cbks, 2)
-
-    #     if 'CapsNet' in self.name : return {'training_history': history, 'accuracy_train': history['output_accuracy'], 'accuracy_test':  history['val_output_accuracy']}
-    #     else:                      return {'training_history': history, 'accuracy_train': history['accuracy'],        'accuracy_test':  history['val_accuracy']}
-
     def fit_normal(self):
         """
-        Fits the model in normal mode or defence mode.
+        TODO: Write Comment
         """
+        x_train = self.processed_x_train if self.NUM_DEFENCE != 1 else self.raw_x_train
+            
+        history = self.fit_model(x_train, self.processed_y_train, self.processed_x_test, self.processed_y_test,  self.batch_size, self.epochs, self.iterations_train, self.cbks, 2)
 
-        # x_train = self.processed_x_train if self.NUM_DEFENCE != 1 else self.raw_x_train
-        # y_train = self.processed_y_train if self.NUM_DEFENCE != 1 else self.raw_y_train
-        history = self.fit_model(
-            self.train_dataset, self.val_dataset,
-            self.batch_size, self.epochs, self.iterations_train, self.cbks, verbose=1
-        )
+        if 'CapsNet' in self.name : return {'training_history': history, 'accuracy_train': history['output_accuracy'], 'accuracy_test':  history['val_output_accuracy']}
+        else:                      return {'training_history': history, 'accuracy_train': history['accuracy'],        'accuracy_test':  history['val_accuracy']}
 
-        if 'CapsNet' in self.name:
-            return {
-                'training_history': history,
-                'accuracy_train': history.get('output_accuracy', history['accuracy']),
-                'accuracy_test': history.get('val_output_accuracy', history['val_accuracy'])
-            }
-        else:
-            for e,v in history.items():
-                print(e,v)
-            return {
-                'training_history': history,
-                'accuracy_train': history['accuracy'],
-                'accuracy_test': history['val_accuracy']
-            }
     
     def predict(self, img):
         """
@@ -485,15 +338,15 @@ class Model:
 
     ## OLD CODE
 
-    # def get(self, samples):
-    #     """
-    #     TODO: Write Comment
-    #     """ 
+    def get(self, samples):
+        """
+        TODO: Write Comment
+        """ 
 
-    #     indices = list(range(10000)) 
-    # # np.random.randint(self.num_images['test'], size=samples)
+        indices = list(range(10000)) 
+    # np.random.randint(self.num_images['test'], size=samples)
         
-    #     return indices, self.raw_x_test[indices].astype('float32'), self.raw_y_test[indices]
+        return indices, self.raw_x_test[indices].astype('float32'), self.raw_y_test[indices]
 
     # def get(self, samples):
     #     """
@@ -531,33 +384,33 @@ class Model:
     #     return selected_indices, x_samples.astype('float32'), y_samples
 
 
-    def get(self, samples):
-        """
-        Returns sample images and their labels from the test set.
-        """
-        # indices = np.random.choice(self.num_images['test'], size=samples, replace=False)
-        # return indices, self.raw_x_test[indices].astype('float32'), self.raw_y_test[indices]
-        val_data = list(self.val_dataset.unbatch())
+    # def get(self, samples):
+    #     """
+    #     Returns sample images and their labels from the test set.
+    #     """
+    #     # indices = np.random.choice(self.num_images['test'], size=samples, replace=False)
+    #     # return indices, self.raw_x_test[indices].astype('float32'), self.raw_y_test[indices]
+    #     val_data = list(self.val_dataset.unbatch())
 
 
-        total = len(val_data)
-        indices = np.random.choice(total, size=samples, replace=False)
+    #     total = len(val_data)
+    #     indices = np.random.choice(total, size=samples, replace=False)
 
-        x_samples = []
-        y_samples = []
-        desired_y = [0,1,55,56,57]
+    #     x_samples = []
+    #     y_samples = []
+    #     desired_y = [0,1,55,56,57]
 
-        for idx in indices:
-            x, y = val_data[idx]
-            x_samples.append((x.numpy())*255)
-            y_scalar = tf.argmax(y, axis=-1)  # Convert one-hot to scalar
-            y_samples.append(y_scalar.numpy())
+    #     for idx in indices:
+    #         x, y = val_data[idx]
+    #         x_samples.append((x.numpy())*255)
+    #         y_scalar = tf.argmax(y, axis=-1)  # Convert one-hot to scalar
+    #         y_samples.append(y_scalar.numpy())
         
-        x_samples = np.stack(x_samples)
-        y_samples = np.array(y_samples)
+    #     x_samples = np.stack(x_samples)
+    #     y_samples = np.array(y_samples)
 
-        print(x_samples.shape, y_samples.shape)
-        return indices, x_samples.astype('float32'), y_samples
+    #     print(x_samples.shape, y_samples.shape)
+    #     return indices, x_samples.astype('float32'), y_samples
 
 
     

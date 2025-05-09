@@ -12,3 +12,4 @@ import networks.cifar.network_in_network
 import networks.cifar.resnet
 import networks.cifar.vgg
 import networks.cifar.wide_resnet
+import networks.cifar.yolo_v3
